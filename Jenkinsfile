@@ -1,18 +1,7 @@
 pipeline {
     agent any
 
-    environment {
-        SERVER = "10.2.2.141"
-        USER = "ubuntu"
-    }
-
     stages {
-
-        stage('Checkout Code') {
-            steps {
-                git 'git@github.com:Gopi-1818/maven-simple.git'
-            }
-        }
 
         stage('Build & Test') {
             steps {
