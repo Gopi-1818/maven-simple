@@ -11,10 +11,10 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                sh 'trivy fs --exit-code 1 --severity HIGH,CRITICAL .'
+                sh 'trivy fs --severity HIGH,CRITICAL --exit-code 1 .'
             }
         }
-
+        
         stage('Package') {
             steps {
                 sh 'mvn package'
