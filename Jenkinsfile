@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        APP_SERVER = "10.2.2.141"
-        DEPLOY_USER = "ubuntu"
+        SERVER = "10.2.2.141"
+        USER = "ubuntu"
     }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                checkout scm
+                git 'git@github.com:Gopi-1818/maven-simple.git'
             }
         }
 
@@ -22,29 +22,21 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                sh 'mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7'
+                sh 'trivy fs --exit-code 1 --severity HIGH,CRITICAL .'
             }
         }
 
         stage('Package') {
             steps {
-                sh 'mvn package -DskipTests'
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                sh 'mvn package'
+                archiveArtifacts artifacts: 'target/*.jar'
             }
         }
 
-        stage('Deploy to Application Server') {
-            when {
-                branch 'main'
-            }
+        stage('Deploy') {
+            when { branch 'main' }
             steps {
-                sshagent(['app-server-ssh']) {
-                    sh '''
-                        scp -o StrictHostKeyChecking=no target/*.jar ubuntu@10.2.2.141:/home/ubuntu/app.jar
-                        ssh ubuntu@10.2.2.141 "pkill java || true"
-                        ssh ubuntu@10.2.2.141 "nohup java -jar /home/ubuntu/app.jar > app.log 2>&1 &"
-                    '''
-                }
+                sh 'scp target/*.jar ubuntu@10.2.2.141:/home/ubuntu/app.jar'
             }
         }
     }
