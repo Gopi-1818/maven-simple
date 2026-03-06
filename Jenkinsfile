@@ -14,7 +14,7 @@ pipeline {
                 sh 'trivy fs --severity HIGH,CRITICAL --exit-code 1 .'
             }
         }
-        
+
         stage('Package') {
             steps {
                 sh 'mvn package'
@@ -23,10 +23,15 @@ pipeline {
         }
 
         stage('Deploy') {
-            when { branch 'main' }
+            when {
+                branch 'main'
+            }
             steps {
-                sh 'scp target/*.jar ubuntu@10.2.2.141:/home/ubuntu/app.jar'
+                sshagent(['10.2.2.28']) {
+                    sh 'scp target/*.jar ubuntu@10.2.2.141:/home/ubuntu/app.jar'
+                }
             }
         }
+
     }
 }
